@@ -1,5 +1,5 @@
-import Parser from "./parser.mjs";
-import DatabaseError from "./DatabaseError.mjs";
+import Parser from './parser.mjs';
+import DatabaseError from './DatabaseError.mjs';
 
 export default class Database {
   constructor() {
@@ -26,8 +26,6 @@ export default class Database {
 
       this.tables[tableName].columns[name] = type;
     }
-
-    console.log(JSON.stringify(this, null, 2));
   }
   insert(statement) {
     let [, tableName, columns, values] = statement;
@@ -80,14 +78,18 @@ export default class Database {
     return this.tables[tableName].data;
   }
   execute(statement) {
-    let result = this.parser.parse(statement);
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        let result = this.parser.parse(statement);
 
-    if (result) {
-      return this[result.command](result.parsedStatement);
-    } else {
-      let message = `Syntax error: '${statement}'`;
+        if (result) {
+          resolve(this[result.command](result.parsedStatement));
+        } else {
+          let message = `Syntax error: '${statement}'`;
 
-      throw new DatabaseError(message, statement);
-    }
+          reject(new DatabaseError(message, statement));
+        }
+      }, 1000);
+    });
   }
 }
