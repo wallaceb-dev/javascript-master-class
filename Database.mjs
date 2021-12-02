@@ -1,36 +1,7 @@
-class Parser {
-  constructor() {
-    this.commands = new Map();
-    this.commands.set(
-      'insert',
-      /insert into ([a-z]+) \((.+)\) values \((.+)\)/
-    );
-    this.commands.set('select', /select (.+) from ([a-z]+)(?: where (.+))?/);
-    this.commands.set('delete', /delete from ([a-z]+) (?:where (.+))?/);
-    this.commands.set('createTable', /create table ([a-z]+) \((.+)\)/);
-  }
+import Parser from "./parser.mjs";
+import DatabaseError from "./DatabaseError.mjs";
 
-  parse(statement) {
-    for (let [command, regexp] of this.commands) {
-      const parsedStatement = statement.match(regexp);
-      if (parsedStatement) {
-        return {
-          command,
-          parsedStatement,
-        };
-      }
-    }
-  }
-}
-
-class DatabaseError {
-  constructor(message, statement) {
-    this.message = message;
-    this.statement = statement;
-  }
-}
-
-class Database {
+export default class Database {
   constructor() {
     this.tables = {};
     this.parser = new Parser();
@@ -119,43 +90,4 @@ class Database {
       throw new DatabaseError(message, statement);
     }
   }
-}
-try {
-  const database = new Database();
-
-  database.execute(
-    'create table author (id number, name string, age number, city string, state string, country string)'
-  );
-
-  database.execute(
-    'insert into author (id, name, age) values (1, Douglas Crockford, 62)'
-  );
-  database.execute(
-    'insert into author (id, name, age) values (2, Linus Torvalds, 47)'
-  );
-  database.execute(
-    'insert into author (id, name, age) values (3, Martin Fowler, 54)'
-  );
-
-  console.log(
-    JSON.stringify(
-      database.execute('select name from author where id = 3'),
-      null,
-      2
-    )
-  );
-
-  console.log(
-    JSON.stringify(database.execute('select name, age from author'), null, 2)
-  );
-
-  console.log(
-    JSON.stringify(
-      database.execute('delete from author where id = 2'),
-      null,
-      2
-    )
-  );
-} catch (error) {
-  console.log(error.message);
 }
