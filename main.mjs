@@ -1,56 +1,27 @@
 import Database from './Database.mjs';
 
-try {
-  const database = new Database();
+(async function () {
+  try {
+    const database = new Database();
+    await database.execute(
+      'create table author (id number, name string, age number, city string, state string, country string)'
+    );
+    await Promise.all([
+      await database.execute(
+        'insert into author (id, name, age) values (1, Douglas Crockford, 62)'
+      ),
+      await database.execute(
+        'insert into author (id, name, age) values (2, Linus Torvalds, 47)'
+      ),
+      await database.execute(
+        'insert into author (id, name, age) values (3, Martin Fowler, 54)'
+      ),
+    ]);
 
-  (async function () {
-    await database
-      .execute(
-        'create table author (id number, name string, age number, city string, state string, country string)'
-      )
-      .then(async function () {
-        await Promise.all([
-          await database.execute(
-            'insert into author (id, name, age) values (1, Douglas Crockford, 62)'
-          ),
-          await database.execute(
-            'insert into author (id, name, age) values (2, Linus Torvalds, 47)'
-          ),
-          await database.execute(
-            'insert into author (id, name, age) values (3, Martin Fowler, 54)'
-          ),
-        ])
-          .then(async function () {
-            await database
-              .execute('select name, age from author')
-              .then(function (result) {
-                console.log(result);
-              });
-          })
-          .catch(function (e) {
-            console.log(e.message);
-          });
-      })
-      .catch(function (e) {
-        console.log(e.message);
-      });
-  })();
+    const result = await database.execute('select name, age from author');
 
-  // console.log(
-  //   JSON.stringify(
-  //     database.execute('select name from author where id = 3'),
-  //     null,
-  //     2
-  //   )
-  // );
-
-  // console.log(
-  //   JSON.stringify(database.execute('select name, age from author'), null, 2)
-  // );
-
-  // console.log(
-  //   JSON.stringify(database.execute('delete from author where id = 2'), null, 2)
-  // );
-} catch (error) {
-  console.log(error.message);
-}
+    console.log(result);
+  } catch (error) {
+    console.log(error.message);
+  }
+})();
